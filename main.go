@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -13,7 +12,6 @@ import (
 )
 
 func main() {
-
 	lambda.Start(Handler)
 
 }
@@ -44,10 +42,28 @@ const (
 	CharSet = "UTF-8"
 )
 
+type Email struct {
+	Name    string `json:"name"`
+	Phone   string `json:"phone"`
+	Email   string `json:"email"`
+	Message string `json:"message"`
+}
+
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
-	eventJson, _ := json.MarshalIndent(request, "", "  ")
-	log.Printf("EVENT: %s", eventJson)
+	body := request.Body
+	var email Email
+
+	err := json.Unmarshal([]byte(body), &email)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			Body:       fmt.Sprintf("Error Unmarshaling body"),
+			StatusCode: 400,
+		}, nil
+	}
+
+	fmt.Println(email.Message)
+	fmt.Println(email.Name)
 
 	sess, _ := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2")},
@@ -55,6 +71,8 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	emailClient := ses.New(sess)
 
+	emailTemplate := "Name:" + email.Name + "\n" + "Email: " + email.Email + "\n" + "Phone: " + email.Phone + "\n" + "Body:" + email.Message
+
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{
 			CcAddresses: []*string{},
@@ -66,72 +84,27 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 			Body: &ses.Body{
 				Html: &ses.Content{
 					Charset: aws.String(CharSet),
-					Data:    aws.String(HtmlBody),
+					Data:    aws.String(emailTemplate),
 				},
 				Text: &ses.Content{
 					Charset: aws.String(CharSet),
-					Data:    aws.String(TextBody),
+					Data:    aws.String(emailTemplate),
 				},
 			},
 			Subject: &ses.Content{
 				Charset: aws.String(CharSet),
-				Data:    aws.String(Subject),
+				Data:    aws.String("[Shoestring Cafe]" + email.Name + " " + email.Email),
 			},
 		},
 		Source: aws.String(Sender),
-		// Uncomment to use a configuration set
-		//ConfigurationSetName: aws.String(ConfigurationSet),
 	}
 
-	result, _ := emailClient.SendEmail(input)
+	_, err = emailClient.SendEmail(input)
 
-	fmt.Println(result)
+	fmt.Println(err)
 
 	return events.APIGatewayProxyResponse{
 		Body:       fmt.Sprintf("Success!"),
 		StatusCode: 200,
 	}, nil
-}
-
-func try() {
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-west-2")},
-	)
-
-	fmt.Println(err)
-
-	emailClient := ses.New(sess)
-
-	input := &ses.SendEmailInput{
-		Destination: &ses.Destination{
-			CcAddresses: []*string{},
-			ToAddresses: []*string{
-				aws.String(Recipient),
-			},
-		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Html: &ses.Content{
-					Charset: aws.String(CharSet),
-					Data:    aws.String(HtmlBody),
-				},
-				Text: &ses.Content{
-					Charset: aws.String(CharSet),
-					Data:    aws.String(TextBody),
-				},
-			},
-			Subject: &ses.Content{
-				Charset: aws.String(CharSet),
-				Data:    aws.String(Subject),
-			},
-		},
-		Source: aws.String(Sender),
-		// Uncomment to use a configuration set
-		//ConfigurationSetName: aws.String(ConfigurationSet),
-	}
-
-	result, err := emailClient.SendEmail(input)
-	fmt.Println(err)
-
-	fmt.Println(result)
 }

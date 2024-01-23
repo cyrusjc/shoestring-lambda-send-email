@@ -1,4 +1,4 @@
-all: compile upload
+all: compile upload clean
 
 compile: check-go build zip
 upload:compile to-s3 to-lambda
@@ -19,7 +19,7 @@ BUILD_DIR ?= ./build
 MAIN_DIR ?= ./function
 
 GO_FILES ?= $(shell find . -name '*.go')
-BUILD_FILE ?= main
+BUILD_FILE ?= main-email
 
 check-go:
 	@which go > /dev/null || (echo "Go not found. Please install Go." && exit 1)
@@ -34,7 +34,7 @@ build:
 
 zip: 
 	@which zip > /dev/null || (echo "zip not found. Please install zip." && exit 1)
-	zip -FS -j $(BUILD_DIR)/${BUILD_FILE}-email.zip $(BUILD_DIR)/${BUILD_FILE}
+	zip -FS -j $(BUILD_DIR)/${BUILD_FILE}.zip $(BUILD_DIR)/${BUILD_FILE}
 
 to-s3:
 	aws s3 sync $(BUILD_DIR)/ s3://$(BUCKET_NAME) --exclude "*" --include "*.zip"
@@ -46,6 +46,9 @@ invoke-lambda:
 	aws lambda invoke --function-name ${FUNC_NAME} out --log-type Tail --query 'LogResult' --output text |  base64 -d
 	rm out
 
-clean-all:
+clean-bin:
 	cd $(BUILD_DIR) && find . ! -name '*.zip' -type f -exec rm -f {} +
+
+clean-all:
+	rm -f $(BUILD_DIR)/*
 
