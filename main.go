@@ -57,7 +57,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	err := json.Unmarshal([]byte(body), &email)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
-			Body:       fmt.Sprintf("Error Unmarshaling body"),
+			Body:       fmt.Sprintf("Error Unmarshaling body" + err.Error()),
 			StatusCode: 400,
 		}, nil
 	}
@@ -101,7 +101,13 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	_, err = emailClient.SendEmail(input)
 
-	fmt.Println(err)
+	if err != nil {
+
+		return events.APIGatewayProxyResponse{
+			Body:       fmt.Sprintf("Error sending email" + err.Error()),
+			StatusCode: 400,
+		}, nil
+	}
 
 	return events.APIGatewayProxyResponse{
 		Body:       fmt.Sprintf("Success!"),
