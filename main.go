@@ -11,24 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 )
 
-func main() {
-	lambda.Start(Handler)
-
-}
-
-const (
-	// Replace sender@example.com with your "From" address.
-	// This address must be verified with Amazon SES.
-	Sender = "shoestringcafe@gmail.com"
-
-	// Replace recipient@example.com with a "To" address. If your account
-	// is still in the sandbox, this address must be verified.
-	Recipient = "shoestringcafe@gmail.com"
-
-	// The character encoding for the email.
-	CharSet = "UTF-8"
-)
-
 type Email struct {
 	Name    string `json:"name"`
 	Phone   string `json:"phone"`
@@ -36,8 +18,17 @@ type Email struct {
 	Message string `json:"message"`
 }
 
+const (
+	Sender    = "shoestringcafe@gmail.com"
+	Recipient = "shoestringcafe@gmail.com"
+
+	// The character encoding for the email.
+	CharSet = "UTF-8"
+)
+
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
+	// field to fill struct is in body
 	body := request.Body
 	var email Email
 
@@ -53,7 +44,6 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	sess, _ := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2")},
 	)
-
 	emailClient := ses.New(sess)
 
 	emailTemplate := "Name:" + email.Name + "\n" + "Email: " + email.Email + "\n" + "Phone: " + email.Phone + "\n" + "Body:" + email.Message
@@ -100,4 +90,8 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		Body:       "Success",
 		StatusCode: 200,
 	}, nil
+}
+
+func main() {
+	lambda.Start(Handler)
 }
