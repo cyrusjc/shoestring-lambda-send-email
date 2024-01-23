@@ -25,19 +25,6 @@ const (
 	// is still in the sandbox, this address must be verified.
 	Recipient = "shoestringcafe@gmail.com"
 
-	// Specify a configuration set. To use a configuration
-	// set, comment the next line and line 92.
-	//ConfigurationSet = "ConfigSet"
-
-	// The subject line for the email.
-	Subject = "Amazon SES Test (AWS SDK for Go)"
-
-	// The HTML body for the email.
-	HtmlBody = "testing mail service"
-
-	//The email body for recipients with non-HTML email clients.
-	TextBody = "This email was sent with Amazon SES using the AWS SDK for Go."
-
 	// The character encoding for the email.
 	CharSet = "UTF-8"
 )
@@ -56,14 +43,12 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	err := json.Unmarshal([]byte(body), &email)
 	if err != nil {
+		fmt.Println(err)
 		return events.APIGatewayProxyResponse{
 			Body:       fmt.Sprintf("Error Unmarshaling body" + err.Error()),
 			StatusCode: 400,
 		}, nil
 	}
-
-	fmt.Println(email.Message)
-	fmt.Println(email.Name)
 
 	sess, _ := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2")},
@@ -75,7 +60,9 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{
-			CcAddresses: []*string{},
+			CcAddresses: []*string{
+				// aws.String(email.Email),
+			},
 			ToAddresses: []*string{
 				aws.String(Recipient),
 			},
@@ -102,7 +89,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	_, err = emailClient.SendEmail(input)
 
 	if err != nil {
-
+		fmt.Println(err)
 		return events.APIGatewayProxyResponse{
 			Body:       fmt.Sprintf("Error sending email" + err.Error()),
 			StatusCode: 400,
@@ -110,7 +97,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	}
 
 	return events.APIGatewayProxyResponse{
-		Body:       fmt.Sprintf("Success!"),
+		Body:       "Success",
 		StatusCode: 200,
 	}, nil
 }

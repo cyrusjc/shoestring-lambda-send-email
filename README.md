@@ -1,2 +1,4 @@
 # shoestring-lambda-send-email
-lambda function that uses AWS SES to send email for contact page form
+
+Function to send email for general inquieries / questions regarding the restaurant. Form in question is found on
+https://shoestring.cafe/contact
