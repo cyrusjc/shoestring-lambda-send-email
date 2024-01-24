@@ -52,3 +52,6 @@ clean-bin:
 clean-all:
 	rm -f $(BUILD_DIR)/*
 
+update-ses-template:
+	aws ses update-template --cli-input-json file://Templates/emailTemplate.json
+

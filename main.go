@@ -46,37 +46,16 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	)
 	emailClient := ses.New(sess)
 
-	emailTemplate := "Name:" + email.Name + "\n" + "Email: " + email.Email + "\n" + "Phone: " + email.Phone + "\n" + "Body:" + email.Message
-
-	input := &ses.SendEmailInput{
+	data := "{ \"name\":\"" + email.Name + "\", \"phone\": \"" + email.Phone + "\", \"email\": \"" + email.Email + "\", \"message\": \"" + email.Message + "\"}"
+	input := &ses.SendTemplatedEmailInput{
+		Source:   aws.String(Sender),
+		Template: aws.String("shoestringEmailTemplate"),
 		Destination: &ses.Destination{
-			CcAddresses: []*string{
-				// aws.String(email.Email),
-			},
-			ToAddresses: []*string{
-				aws.String(Recipient),
-			},
+			ToAddresses: []*string{aws.String(Recipient)},
 		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Html: &ses.Content{
-					Charset: aws.String(CharSet),
-					Data:    aws.String(emailTemplate),
-				},
-				Text: &ses.Content{
-					Charset: aws.String(CharSet),
-					Data:    aws.String(emailTemplate),
-				},
-			},
-			Subject: &ses.Content{
-				Charset: aws.String(CharSet),
-				Data:    aws.String("[Shoestring Cafe]" + email.Name + " " + email.Email),
-			},
-		},
-		Source: aws.String(Sender),
+		TemplateData: &data,
 	}
-
-	_, err = emailClient.SendEmail(input)
+	_, err = emailClient.SendTemplatedEmail(input)
 
 	if err != nil {
 		fmt.Println(err)
