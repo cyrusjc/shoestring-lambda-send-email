@@ -19,7 +19,7 @@ type Email struct {
 }
 
 const (
-	Sender    = "shoestringcafe@gmail.com"
+	Sender    = "inquiry@shoestring.cafe"
 	Recipient = "shoestringcafe@gmail.com"
 
 	// The character encoding for the email.
