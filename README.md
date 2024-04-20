@@ -8,3 +8,4 @@ To do:
 
 
 Create an email template to make it more appealing to the eye
+Buffer requests with sqs
