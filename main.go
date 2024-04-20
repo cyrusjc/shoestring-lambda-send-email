@@ -48,8 +48,9 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	data := "{ \"name\":\"" + email.Name + "\", \"phone\": \"" + email.Phone + "\", \"email\": \"" + email.Email + "\", \"message\": \"" + email.Message + "\"}"
 	input := &ses.SendTemplatedEmailInput{
-		Source:   aws.String(Sender),
-		Template: aws.String("shoestringEmailTemplate"),
+		Source:           aws.String(Sender),
+		Template:         aws.String("shoestringEmailTemplate"),
+		ReplyToAddresses: []*string{aws.String(email.Email)},
 		Destination: &ses.Destination{
 			ToAddresses: []*string{aws.String(Recipient)},
 		},
