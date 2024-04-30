@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -21,7 +22,6 @@ type Email struct {
 const (
 	Sender    = "inquiry@shoestring.cafe"
 	Recipient = "shoestringcafe@gmail.com"
-
 	// The character encoding for the email.
 	CharSet = "UTF-8"
 )
@@ -31,6 +31,8 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	// field to fill struct is in body
 	body := request.Body
 	var email Email
+
+	log.Println(body)
 
 	err := json.Unmarshal([]byte(body), &email)
 	if err != nil {

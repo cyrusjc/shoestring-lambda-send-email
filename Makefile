@@ -1,7 +1,7 @@
 all: compile upload clean
 
 compile: check-go build zip
-upload:compile to-s3 to-lambda
+upload:compile to-s3 to-lambda update-ses-template
 call: invoke-lambda
 clean: clean-all
 
