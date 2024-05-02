@@ -32,11 +32,10 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	body := request.Body
 	var email Email
 
-	log.Println(body)
-
+	log.Println("Messaged received:", body)
 	err := json.Unmarshal([]byte(body), &email)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("Error unmarshaling: ", err)
 		return events.APIGatewayProxyResponse{
 			Body:       fmt.Sprintf("Error Unmarshaling body" + err.Error()),
 			StatusCode: 400,
@@ -56,12 +55,12 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		Destination: &ses.Destination{
 			ToAddresses: []*string{aws.String(Recipient)},
 		},
-		TemplateData: &data,
+		TemplateData: aws.String(data),
 	}
 	_, err = emailClient.SendTemplatedEmail(input)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println("Error sending email: ", err)
 		return events.APIGatewayProxyResponse{
 			Body:       fmt.Sprintf("Error sending email" + err.Error()),
 			StatusCode: 400,
