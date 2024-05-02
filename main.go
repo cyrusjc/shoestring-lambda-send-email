@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -42,12 +43,14 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
+	email.Message = strings.TrimSuffix(email.Message, "\n")
+
 	sess, _ := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2")},
 	)
 	emailClient := ses.New(sess)
 
-	data := "{ \"name\":\"" + email.Name + "\", \"phone\": \"" + email.Phone + "\", \"email\": \"" + email.Email + "\", \"message\": \"" + email.Message + "\"}"
+	data := fmt.Sprintf("{ \"name\":\""+"%s"+"\", \"phone\": \""+"%s"+"\", \"email\": \""+"%s"+"\", \"message\": \""+"%s"+"\"}", email.Name, email.Phone, email.Email, email.Message)
 	input := &ses.SendTemplatedEmailInput{
 		Source:           aws.String(Sender),
 		Template:         aws.String("shoestringEmailTemplate"),
