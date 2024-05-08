@@ -45,6 +45,14 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	email.Message = strings.TrimSuffix(email.Message, "\n")
 
+	email.Message = strings.Map(func(r rune) rune {
+		if r == '\n' {
+			return ' '
+		}
+
+		return r
+	}, email.Message)
+
 	sess, _ := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2")},
 	)
